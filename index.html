@@ -134,29 +134,41 @@
             </div>
 
             <!-- Controls Header Bar -->
-            <div id="itemControls" class="flex flex-col xl:flex-row xl:items-center justify-between gap-4 mb-6">
-                <!-- Status Tabs -->
-                <div class="flex bg-slate-900 p-1.5 rounded-2xl border border-slate-800/80 w-full xl:max-w-2xl shadow-inner overflow-x-auto">
-                    <button id="tab-ongoing" onclick="switchTab('ongoing')" class="flex-1 py-2.5 px-3 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center justify-center space-x-2 bg-brand-500 text-slate-950 shadow-md shadow-brand-500/10 whitespace-nowrap">
-                        <i class="fa-solid fa-spinner"></i>
-                        <span>In Progress</span>
-                        <span id="badge-ongoing" class="bg-slate-950/30 text-xs px-2 py-0.5 rounded-full font-mono">0</span>
-                    </button>
-                    <button id="tab-willstart" onclick="switchTab('willstart')" class="flex-1 py-2.5 px-3 rounded-xl text-xs sm:text-sm font-semibold transition-all flex items-center justify-center space-x-2 text-slate-400 hover:text-white whitespace-nowrap">
-                        <i class="fa-solid fa-list-check"></i>
-                        <span>Queue</span>
-                        <span id="badge-willstart" class="bg-slate-800 text-xs px-2 py-0.5 rounded-full text-slate-300 font-mono">0</span>
-                    </button>
-                    <button id="tab-onhold" onclick="switchTab('onhold')" class="flex-1 py-2.5 px-3 rounded-xl text-xs sm:text-sm font-semibold transition-all flex items-center justify-center space-x-2 text-slate-400 hover:text-white whitespace-nowrap">
-                        <i class="fa-solid fa-circle-pause"></i>
-                        <span>On-Hold</span>
-                        <span id="badge-onhold" class="bg-slate-800 text-xs px-2 py-0.5 rounded-full text-slate-300 font-mono">0</span>
-                    </button>
-                    <button id="tab-bin" onclick="switchTab('bin')" class="flex-1 py-2.5 px-3 rounded-xl text-xs sm:text-sm font-semibold transition-all flex items-center justify-center space-x-2 text-slate-400 hover:text-white whitespace-nowrap">
-                        <i class="fa-solid fa-trash-can"></i>
-                        <span>Item Bin</span>
-                        <span id="badge-bin" class="bg-slate-800 text-xs px-2 py-0.5 rounded-full text-slate-300 font-mono">0</span>
-                    </button>
+            <div id="itemControls" class="flex flex-col xl:flex-row xl:items-start justify-between gap-4 mb-6">
+                <!-- Status Tabs arranged in 2 rows -->
+                <div class="flex flex-col space-y-2 bg-slate-900 p-2 rounded-2xl border border-slate-800/80 w-full xl:max-w-2xl shadow-inner">
+                    <!-- Row 1: In Progress, Queue, On-Hold -->
+                    <div class="flex space-x-2 w-full">
+                        <button id="tab-ongoing" onclick="switchTab('ongoing')" class="flex-1 py-2 px-3 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center justify-center space-x-2 bg-brand-500 text-slate-950 shadow-md shadow-brand-500/10 whitespace-nowrap">
+                            <i class="fa-solid fa-spinner"></i>
+                            <span>In Progress</span>
+                            <span id="badge-ongoing" class="bg-slate-950/30 text-xs px-2 py-0.5 rounded-full font-mono">0</span>
+                        </button>
+                        <button id="tab-willstart" onclick="switchTab('willstart')" class="flex-1 py-2 px-3 rounded-xl text-xs sm:text-sm font-semibold transition-all flex items-center justify-center space-x-2 text-slate-400 hover:text-white whitespace-nowrap">
+                            <i class="fa-solid fa-list-check"></i>
+                            <span>Queue</span>
+                            <span id="badge-willstart" class="bg-slate-800 text-xs px-2 py-0.5 rounded-full text-slate-300 font-mono">0</span>
+                        </button>
+                        <button id="tab-onhold" onclick="switchTab('onhold')" class="flex-1 py-2 px-3 rounded-xl text-xs sm:text-sm font-semibold transition-all flex items-center justify-center space-x-2 text-slate-400 hover:text-white whitespace-nowrap">
+                            <i class="fa-solid fa-circle-pause"></i>
+                            <span>On-Hold</span>
+                            <span id="badge-onhold" class="bg-slate-800 text-xs px-2 py-0.5 rounded-full text-slate-300 font-mono">0</span>
+                        </button>
+                    </div>
+
+                    <!-- Row 2: Completed, Item Bin -->
+                    <div class="flex space-x-2 w-full">
+                        <button id="tab-completed" onclick="switchTab('completed')" class="flex-1 py-2 px-3 rounded-xl text-xs sm:text-sm font-semibold transition-all flex items-center justify-center space-x-2 text-slate-400 hover:text-white whitespace-nowrap">
+                            <i class="fa-solid fa-circle-check"></i>
+                            <span>Completed</span>
+                            <span id="badge-completed" class="bg-slate-800 text-xs px-2 py-0.5 rounded-full text-slate-300 font-mono">0</span>
+                        </button>
+                        <button id="tab-bin" onclick="switchTab('bin')" class="flex-1 py-2 px-3 rounded-xl text-xs sm:text-sm font-semibold transition-all flex items-center justify-center space-x-2 text-slate-400 hover:text-white whitespace-nowrap">
+                            <i class="fa-solid fa-trash-can"></i>
+                            <span>Item Bin</span>
+                            <span id="badge-bin" class="bg-slate-800 text-xs px-2 py-0.5 rounded-full text-slate-300 font-mono">0</span>
+                        </button>
+                    </div>
                 </div>
 
                 <!-- Search Field -->
@@ -307,6 +319,7 @@
                             <option value="ongoing">In Progress</option>
                             <option value="willstart">Queue</option>
                             <option value="onhold">On-Hold</option>
+                            <option value="completed">Completed</option>
                         </select>
                     </div>
                 </div>
@@ -553,6 +566,7 @@
             document.getElementById('badge-ongoing').textContent = folderItems.filter(i => i.category === 'ongoing').length;
             document.getElementById('badge-willstart').textContent = folderItems.filter(i => i.category === 'willstart').length;
             document.getElementById('badge-onhold').textContent = folderItems.filter(i => i.category === 'onhold').length;
+            document.getElementById('badge-completed').textContent = folderItems.filter(i => i.category === 'completed').length;
             document.getElementById('badge-bin').textContent = folderItems.filter(i => i.category === 'bin').length;
 
             const filtered = folderItems.filter(item => {
@@ -587,7 +601,11 @@
                     const card = document.createElement('div');
                     card.className = "bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden flex flex-col card-hover-effect group relative shadow-lg";
 
-                    const categoryLabel = item.category === 'ongoing' ? (item.chapter || 'In Progress') : (item.category === 'willstart' ? 'Queue' : 'On-Hold');
+                    let categoryLabel = 'In Progress';
+                    if (item.category === 'ongoing') categoryLabel = item.chapter || 'In Progress';
+                    else if (item.category === 'willstart') categoryLabel = 'Queue';
+                    else if (item.category === 'onhold') categoryLabel = 'On-Hold';
+                    else if (item.category === 'completed') categoryLabel = 'Completed';
 
                     if (currentTab === 'bin') {
                         card.innerHTML = `
@@ -867,12 +885,13 @@
         // Tab & Search Handlers
         function switchTab(tab) {
             currentTab = tab;
-            const activeClass = "flex-1 py-2.5 px-3 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center justify-center space-x-2 bg-brand-500 text-slate-950 shadow-md shadow-brand-500/10 whitespace-nowrap";
-            const inactiveClass = "flex-1 py-2.5 px-3 rounded-xl text-xs sm:text-sm font-semibold transition-all flex items-center justify-center space-x-2 text-slate-400 hover:text-white whitespace-nowrap";
+            const activeClass = "flex-1 py-2 px-3 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center justify-center space-x-2 bg-brand-500 text-slate-950 shadow-md shadow-brand-500/10 whitespace-nowrap";
+            const inactiveClass = "flex-1 py-2 px-3 rounded-xl text-xs sm:text-sm font-semibold transition-all flex items-center justify-center space-x-2 text-slate-400 hover:text-white whitespace-nowrap";
 
             document.getElementById('tab-ongoing').className = tab === 'ongoing' ? activeClass : inactiveClass;
             document.getElementById('tab-willstart').className = tab === 'willstart' ? activeClass : inactiveClass;
             document.getElementById('tab-onhold').className = tab === 'onhold' ? activeClass : inactiveClass;
+            document.getElementById('tab-completed').className = tab === 'completed' ? activeClass : inactiveClass;
             document.getElementById('tab-bin').className = tab === 'bin' ? activeClass : inactiveClass;
 
             const emptyBtn = document.getElementById('emptyBinBtn');
