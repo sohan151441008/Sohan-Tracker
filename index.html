@@ -1,0 +1,908 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Media Vault - Dynamic Folders & Categories</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Font - Inter & Sora -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Sora', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#f0fdf4',
+                            100: '#dcfce7',
+                            400: '#4ade80',
+                            500: '#22c55e',
+                            600: '#16a34a',
+                            700: '#15803d',
+                            900: '#14532d',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: rgba(15, 23, 42, 0.6); }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(51, 65, 85, 0.8); border-radius: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(71, 85, 105, 1); }
+        .card-hover-effect { transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s ease; }
+        .card-hover-effect:hover { transform: translateY(-4px); }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen font-sans flex flex-col custom-scrollbar selection:bg-brand-500 selection:text-slate-950">
+
+    <!-- Top Header -->
+    <header class="bg-slate-900/90 backdrop-blur-md border-b border-slate-800 sticky top-0 z-30">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-500 to-emerald-700 flex items-center justify-center shadow-lg shadow-brand-500/20">
+                    <i class="fa-solid fa-layer-group text-slate-950 font-black text-lg"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-extrabold tracking-tight font-display bg-gradient-to-r from-slate-100 via-slate-200 to-brand-400 bg-clip-text text-transparent">
+                        MEDIA<span class="text-brand-500">VAULT</span>
+                    </h1>
+                    <p class="text-[10px] uppercase font-bold tracking-widest text-slate-400 -mt-1">Personal Collection</p>
+                </div>
+            </div>
+            
+            <div class="flex items-center space-x-3">
+                <button onclick="openMediaModal('add')" class="bg-brand-500 hover:bg-brand-400 text-slate-950 px-4 py-2 rounded-xl font-bold text-sm transition-all flex items-center shadow-md shadow-brand-500/20 active:scale-95">
+                    <i class="fa-solid fa-plus mr-2"></i> Add Item
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <div class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col md:flex-row gap-6">
+        
+        <!-- Sidebar - Folders Navigation -->
+        <aside class="w-full md:w-72 shrink-0">
+            <div class="bg-slate-900 border border-slate-800/80 rounded-2xl p-4 sticky top-22 shadow-lg space-y-4">
+                
+                <div class="flex items-center justify-between px-2">
+                    <h2 class="text-xs font-bold uppercase tracking-wider text-slate-400">Folders</h2>
+                    <button onclick="openFolderModal('add')" class="text-brand-400 hover:text-brand-300 text-xs font-bold flex items-center space-x-1 bg-brand-500/10 hover:bg-brand-500/20 px-2 py-1 rounded-lg transition">
+                        <i class="fa-solid fa-folder-plus"></i>
+                        <span>New Folder</span>
+                    </button>
+                </div>
+
+                <!-- Folder Navigation List -->
+                <nav class="space-y-1.5 custom-scrollbar max-h-[50vh] overflow-y-auto pr-1" id="folderNav">
+                    <!-- Populated via JavaScript -->
+                </nav>
+
+                <div class="pt-3 border-t border-slate-800/80">
+                    <button onclick="switchFolder('folder-bin-view')" id="folder-bin-btn" class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-semibold transition-all text-rose-400 hover:bg-rose-950/30">
+                        <div class="flex items-center space-x-3">
+                            <i class="fa-solid fa-dumpster-fire"></i>
+                            <span>Folder Trash Bin</span>
+                        </div>
+                        <span id="count-deleted-folders" class="text-xs px-2 py-0.5 rounded-full font-mono bg-rose-950 border border-rose-800/50 text-rose-300">0</span>
+                    </button>
+                </div>
+
+            </div>
+        </aside>
+
+        <!-- Main Workspace -->
+        <main class="flex-1 min-w-0">
+            
+            <!-- Folder Info Header -->
+            <div id="folderHeader" class="bg-slate-900 border border-slate-800/80 rounded-2xl p-4 mb-6 flex items-center justify-between shadow-md">
+                <div class="flex items-center space-x-4">
+                    <div id="folderHeaderCover" class="w-12 h-12 rounded-xl bg-slate-800 border border-slate-700/80 overflow-hidden flex items-center justify-center text-brand-400 text-xl shrink-0">
+                        <!-- Cover image or fallback icon -->
+                    </div>
+                    <div>
+                        <h2 id="folderHeaderTitle" class="text-lg font-bold text-slate-100 font-display">Folder Name</h2>
+                        <p id="folderHeaderSub" class="text-xs text-slate-400">Active Folder View</p>
+                    </div>
+                </div>
+
+                <div id="folderActionButtons" class="flex items-center space-x-2">
+                    <button id="editCurrentFolderBtn" onclick="editCurrentFolder()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 px-3 py-2 rounded-xl text-xs font-semibold transition flex items-center space-x-1.5">
+                        <i class="fa-solid fa-pen-to-square"></i>
+                        <span>Edit Folder</span>
+                    </button>
+                    <button id="deleteCurrentFolderBtn" onclick="deleteCurrentFolder()" class="bg-rose-950/50 border border-rose-800/50 hover:bg-rose-900/80 text-rose-300 px-3 py-2 rounded-xl text-xs font-semibold transition flex items-center space-x-1.5">
+                        <i class="fa-solid fa-trash"></i>
+                        <span>Move to Bin</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Controls Header Bar -->
+            <div id="itemControls" class="flex flex-col xl:flex-row xl:items-center justify-between gap-4 mb-6">
+                <!-- Status Tabs -->
+                <div class="flex bg-slate-900 p-1.5 rounded-2xl border border-slate-800/80 w-full xl:max-w-2xl shadow-inner overflow-x-auto">
+                    <button id="tab-ongoing" onclick="switchTab('ongoing')" class="flex-1 py-2.5 px-3 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center justify-center space-x-2 bg-brand-500 text-slate-950 shadow-md shadow-brand-500/10 whitespace-nowrap">
+                        <i class="fa-solid fa-spinner"></i>
+                        <span>In Progress</span>
+                        <span id="badge-ongoing" class="bg-slate-950/30 text-xs px-2 py-0.5 rounded-full font-mono">0</span>
+                    </button>
+                    <button id="tab-willstart" onclick="switchTab('willstart')" class="flex-1 py-2.5 px-3 rounded-xl text-xs sm:text-sm font-semibold transition-all flex items-center justify-center space-x-2 text-slate-400 hover:text-white whitespace-nowrap">
+                        <i class="fa-solid fa-list-check"></i>
+                        <span>Queue</span>
+                        <span id="badge-willstart" class="bg-slate-800 text-xs px-2 py-0.5 rounded-full text-slate-300 font-mono">0</span>
+                    </button>
+                    <button id="tab-onhold" onclick="switchTab('onhold')" class="flex-1 py-2.5 px-3 rounded-xl text-xs sm:text-sm font-semibold transition-all flex items-center justify-center space-x-2 text-slate-400 hover:text-white whitespace-nowrap">
+                        <i class="fa-solid fa-circle-pause"></i>
+                        <span>On-Hold</span>
+                        <span id="badge-onhold" class="bg-slate-800 text-xs px-2 py-0.5 rounded-full text-slate-300 font-mono">0</span>
+                    </button>
+                    <button id="tab-bin" onclick="switchTab('bin')" class="flex-1 py-2.5 px-3 rounded-xl text-xs sm:text-sm font-semibold transition-all flex items-center justify-center space-x-2 text-slate-400 hover:text-white whitespace-nowrap">
+                        <i class="fa-solid fa-trash-can"></i>
+                        <span>Item Bin</span>
+                        <span id="badge-bin" class="bg-slate-800 text-xs px-2 py-0.5 rounded-full text-slate-300 font-mono">0</span>
+                    </button>
+                </div>
+
+                <!-- Search Field -->
+                <div class="flex items-center space-x-3 w-full xl:w-auto">
+                    <button id="emptyBinBtn" onclick="emptyBin()" title="Empty Bin Permanently" class="hidden bg-rose-950/60 border border-rose-800/80 text-rose-300 hover:bg-rose-900 px-3 py-2.5 rounded-xl text-xs font-bold transition-all active:scale-95 items-center space-x-1.5 whitespace-nowrap">
+                        <i class="fa-solid fa-dumpster-fire"></i>
+                        <span>Empty Items</span>
+                    </button>
+                    <div class="relative flex-1 xl:w-64">
+                        <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500 text-sm"></i>
+                        <input type="text" id="searchInput" oninput="handleSearch()" placeholder="Search titles..." 
+                               class="w-full bg-slate-900 border border-slate-800 rounded-xl pl-10 pr-10 py-2.5 text-sm focus:outline-none focus:border-brand-500 text-slate-100 placeholder-slate-500 transition-all">
+                        <button id="clearSearchBtn" onclick="clearSearch()" class="hidden absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300">
+                            <i class="fa-solid fa-circle-xmark text-sm"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Media Cards Grid -->
+            <div id="mediaGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 sm:gap-5">
+                <!-- Dynamically populated via JS -->
+            </div>
+
+            <!-- Folder Bin View Grid -->
+            <div id="folderBinGrid" class="hidden grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <!-- Dynamically populated via JS when Folder Trash Bin is selected -->
+            </div>
+
+            <!-- Empty State Container -->
+            <div id="emptyState" class="hidden flex-col items-center justify-center py-20 text-center">
+                <div class="w-20 h-20 bg-slate-900 border border-slate-800 rounded-2xl flex items-center justify-center text-slate-600 mb-4 text-2xl shadow-inner">
+                    <i id="emptyIcon" class="fa-solid fa-folder-open"></i>
+                </div>
+                <h3 id="emptyTitle" class="text-lg font-bold text-slate-200">No items found</h3>
+                <p id="emptySubtitle" class="text-slate-500 text-sm mt-1 max-w-sm">No entries match your query in this folder.</p>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- Modal: Add / Edit Folder -->
+    <div id="folderModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-md overflow-hidden shadow-2xl">
+            <div class="px-6 py-4 border-b border-slate-800 flex justify-between items-center bg-slate-900/50">
+                <h3 id="folderModalTitle" class="font-bold text-lg text-slate-100 font-display">Add New Folder</h3>
+                <button onclick="closeFolderModal()" class="text-slate-500 hover:text-slate-200 transition">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+            <form id="folderForm" onsubmit="saveFolder(event)" class="p-6 space-y-4">
+                <input type="hidden" id="folderEditId" value="">
+                
+                <div>
+                    <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">Folder Name *</label>
+                    <input type="text" id="folderNameInput" required placeholder="e.g. Donghua or Sci-Fi Movies" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-brand-500">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">Folder Cover Image (URL or Local PC File)</label>
+                    <div class="space-y-2">
+                        <input type="url" id="folderCoverInput" placeholder="https://domain.com/folder-cover.jpg" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-brand-500">
+                        <div class="flex items-center space-x-2 text-xs text-slate-500">
+                            <span class="h-px bg-slate-800 flex-1"></span>
+                            <span>OR</span>
+                            <span class="h-px bg-slate-800 flex-1"></span>
+                        </div>
+                        <input type="file" id="folderFileInput" accept="image/*" class="block w-full text-xs text-slate-400 file:mr-3 file:py-2 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-slate-800 file:text-slate-300 hover:file:bg-slate-700 cursor-pointer">
+                    </div>
+                    <p class="text-[11px] text-slate-500 mt-1">Leaves default FontAwesome icon if empty.</p>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">Folder Icon (FontAwesome class)</label>
+                    <input type="text" id="folderIconInput" placeholder="fa-solid fa-folder" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-brand-500">
+                </div>
+
+                <div class="pt-4 flex justify-end space-x-3 border-t border-slate-800">
+                    <button type="button" onclick="closeFolderModal()" class="px-4 py-2.5 rounded-xl text-xs font-bold text-slate-400 hover:bg-slate-800 transition">Cancel</button>
+                    <button type="submit" class="px-5 py-2.5 rounded-xl text-xs font-bold bg-brand-500 hover:bg-brand-400 text-slate-950 transition shadow-md shadow-brand-500/20">Save Folder</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: Add / Edit Media Item -->
+    <div id="mediaModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-md overflow-hidden shadow-2xl">
+            <div class="px-6 py-4 border-b border-slate-800 flex justify-between items-center bg-slate-900/50">
+                <h3 id="mediaModalTitle" class="font-bold text-lg text-slate-100 font-display">Add Item</h3>
+                <button onclick="closeMediaModal()" class="text-slate-500 hover:text-slate-200 transition">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+            <form id="mediaForm" onsubmit="saveMedia(event)" class="p-6 space-y-4">
+                <input type="hidden" id="editIndex" value="-1">
+                
+                <div>
+                    <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">Title *</label>
+                    <input type="text" id="formTitle" required placeholder="e.g. Solo Leveling" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-brand-500">
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">Folder</label>
+                        <select id="formFolder" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-brand-500">
+                            <!-- Options rendered dynamically -->
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">Status</label>
+                        <select id="formCategory" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-brand-500">
+                            <option value="ongoing">In Progress</option>
+                            <option value="willstart">Queue</option>
+                            <option value="onhold">On-Hold</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">Progress Tracker (Ch / Ep)</label>
+                    <input type="text" id="formChapter" placeholder="e.g. Ep 12 or Ch 108" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-brand-500">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">Cover Image (URL or Local PC File)</label>
+                    <div class="space-y-2">
+                        <input type="url" id="formCoverUrl" placeholder="https://domain.com/cover.jpg" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-brand-500">
+                        <div class="flex items-center space-x-2 text-xs text-slate-500">
+                            <span class="h-px bg-slate-800 flex-1"></span>
+                            <span>OR</span>
+                            <span class="h-px bg-slate-800 flex-1"></span>
+                        </div>
+                        <input type="file" id="formFileInput" accept="image/*" class="block w-full text-xs text-slate-400 file:mr-3 file:py-2 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-slate-800 file:text-slate-300 hover:file:bg-slate-700 cursor-pointer">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">Web Link (Optional)</label>
+                    <input type="url" id="formUrl" placeholder="https://..." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-brand-500">
+                </div>
+
+                <div class="pt-4 flex justify-end space-x-3 border-t border-slate-800">
+                    <button type="button" onclick="closeMediaModal()" class="px-4 py-2.5 rounded-xl text-xs font-bold text-slate-400 hover:bg-slate-800 transition">Cancel</button>
+                    <button type="submit" class="px-5 py-2.5 rounded-xl text-xs font-bold bg-brand-500 hover:bg-brand-400 text-slate-950 transition shadow-md shadow-brand-500/20">Save Entry</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const initialFolders = [];
+        const initialMediaList = [];
+
+        let folderList = [];
+        let mediaList = [];
+        let currentFolderId = '';
+        let currentTab = 'ongoing';
+
+        function getStringHash(str) {
+            let hash = 0;
+            for (let i = 0; i < str.length; i++) hash = str.charCodeAt(i) + ((hash << 5) - hash);
+            return Math.abs(hash);
+        }
+
+        function generateStylizedCover(title) {
+            const hash = getStringHash(title);
+            const palettes = [
+                { bg1: '#0f172a', bg2: '#581c87', accent: '#a855f7', label: 'VAULT' },
+                { bg1: '#111827', bg2: '#064e3b', accent: '#34d399', label: 'COLLECTION' },
+                { bg1: '#18181b', bg2: '#7f1d1d', accent: '#f87171', label: 'FEATURED' },
+                { bg1: '#0f172a', bg2: '#1e3a8a', accent: '#60a5fa', label: 'TRACKER' },
+            ];
+            const palette = palettes[hash % palettes.length];
+            const words = title.split(' ');
+            let line1 = words.slice(0, 3).join(' ');
+            let line2 = words.slice(3, 6).join(' ');
+            if (words.length > 6) line2 += '...';
+
+            const svg = `
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 400" class="w-full h-full object-cover">
+                <defs>
+                    <linearGradient id="grad-${hash}" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stop-color="${palette.bg1}" />
+                        <stop offset="100%" stop-color="${palette.bg2}" />
+                    </linearGradient>
+                </defs>
+                <rect width="300" height="400" fill="url(#grad-${hash})" />
+                <rect x="30" y="30" width="240" height="340" rx="12" stroke="${palette.accent}" stroke-width="1" fill="none" opacity="0.2" />
+                <text x="40" y="60" font-family="Inter, sans-serif" font-size="10" font-weight="bold" fill="${palette.accent}">${palette.label}</text>
+                <rect x="0" y="240" width="300" height="160" fill="black" opacity="0.6" />
+                <text x="20" y="320" font-family="Sora, sans-serif" font-size="16" font-weight="bold" fill="#ffffff">${escapeXml(line1)}</text>
+                <text x="20" y="342" font-family="Sora, sans-serif" font-size="14" font-weight="600" fill="#cbd5e1">${escapeXml(line2)}</text>
+            </svg>`;
+
+            return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+        }
+
+        function escapeXml(unsafe) {
+            return unsafe.replace(/[<>&'"]/g, function (c) {
+                switch (c) {
+                    case '<': return '&lt;';
+                    case '>': return '&gt;';
+                    case '&': return '&amp;';
+                    case '\'': return '&apos;';
+                    case '"': return '&quot;';
+                }
+            });
+        }
+
+        function readFileAsBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = (error) => reject(error);
+                reader.readAsDataURL(file);
+            });
+        }
+
+        function initApp() {
+            const savedFolders = localStorage.getItem('mv_folders_v2');
+            const savedMedia = localStorage.getItem('mv_media_v2');
+
+            folderList = savedFolders ? JSON.parse(savedFolders) : initialFolders;
+            mediaList = savedMedia ? JSON.parse(savedMedia) : initialMediaList;
+
+            const activeFolders = folderList.filter(f => !f.deleted);
+            if (activeFolders.length > 0) {
+                currentFolderId = activeFolders[0].id;
+            }
+
+            saveToLocalStorage();
+            renderFolderNav();
+            switchFolder(currentFolderId);
+        }
+
+        function saveToLocalStorage() {
+            localStorage.setItem('mv_folders_v2', JSON.stringify(folderList));
+            localStorage.setItem('mv_media_v2', JSON.stringify(mediaList));
+        }
+
+        function renderFolderNav() {
+            const nav = document.getElementById('folderNav');
+            const activeFolders = folderList.filter(f => !f.deleted);
+            const deletedFolders = folderList.filter(f => f.deleted);
+            
+            document.getElementById('count-deleted-folders').textContent = deletedFolders.length;
+
+            nav.innerHTML = '';
+            activeFolders.forEach(folder => {
+                const count = mediaList.filter(m => m.folder === folder.id && m.category !== 'bin').length;
+                const isActive = folder.id === currentFolderId;
+
+                const btn = document.createElement('button');
+                btn.onclick = () => switchFolder(folder.id);
+                btn.className = `w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-semibold transition-all ${
+                    isActive ? 'bg-brand-500 text-slate-950 shadow-md shadow-brand-500/10' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
+                }`;
+
+                const coverAvatar = folder.coverUrl 
+                    ? `<img src="${folder.coverUrl}" class="w-5 h-5 rounded-md object-cover">`
+                    : `<i class="${folder.icon || 'fa-solid fa-folder'} text-xs"></i>`;
+
+                btn.innerHTML = `
+                    <div class="flex items-center space-x-3 truncate">
+                        ${coverAvatar}
+                        <span class="truncate">${escapeXml(folder.name)}</span>
+                    </div>
+                    <span class="text-xs px-2 py-0.5 rounded-full font-mono ${isActive ? 'bg-slate-950/30 text-slate-950' : 'bg-slate-800 text-slate-400'}">${count}</span>
+                `;
+                nav.appendChild(btn);
+            });
+
+            const select = document.getElementById('formFolder');
+            select.innerHTML = '';
+            activeFolders.forEach(f => {
+                const opt = document.createElement('option');
+                opt.value = f.id;
+                opt.textContent = f.name;
+                select.appendChild(opt);
+            });
+        }
+
+        function switchFolder(folderId) {
+            currentFolderId = folderId;
+            renderFolderNav();
+
+            const itemControls = document.getElementById('itemControls');
+            const mediaGrid = document.getElementById('mediaGrid');
+            const folderBinGrid = document.getElementById('folderBinGrid');
+            const folderHeaderTitle = document.getElementById('folderHeaderTitle');
+            const folderHeaderSub = document.getElementById('folderHeaderSub');
+            const folderHeaderCover = document.getElementById('folderHeaderCover');
+            const editBtn = document.getElementById('editCurrentFolderBtn');
+            const deleteBtn = document.getElementById('deleteCurrentFolderBtn');
+
+            if (folderId === 'folder-bin-view') {
+                folderHeaderTitle.textContent = "Folder Trash Bin";
+                folderHeaderSub.textContent = "Manage deleted folders and restore them";
+                folderHeaderCover.innerHTML = `<i class="fa-solid fa-dumpster-fire text-rose-400"></i>`;
+                editBtn.classList.add('hidden');
+                deleteBtn.classList.add('hidden');
+
+                itemControls.classList.add('hidden');
+                mediaGrid.classList.add('hidden');
+                folderBinGrid.classList.remove('hidden');
+                folderBinGrid.classList.add('grid');
+
+                renderFolderBinGrid();
+            } else {
+                const folder = folderList.find(f => f.id === folderId);
+                
+                if (!folder) {
+                    folderHeaderTitle.textContent = "No Folders Available";
+                    folderHeaderSub.textContent = "Click 'New Folder' on the left sidebar to start";
+                    folderHeaderCover.innerHTML = `<i class="fa-solid fa-folder-open text-brand-400"></i>`;
+                    editBtn.classList.add('hidden');
+                    deleteBtn.classList.add('hidden');
+                } else {
+                    folderHeaderTitle.textContent = folder.name;
+                    folderHeaderSub.textContent = "Active Folder View";
+                    
+                    if (folder.coverUrl) {
+                        folderHeaderCover.innerHTML = `<img src="${folder.coverUrl}" class="w-full h-full object-cover">`;
+                    } else {
+                        folderHeaderCover.innerHTML = `<i class="${folder.icon || 'fa-solid fa-folder'} text-brand-400"></i>`;
+                    }
+
+                    editBtn.classList.remove('hidden');
+                    deleteBtn.classList.remove('hidden');
+                }
+
+                itemControls.classList.remove('hidden');
+                mediaGrid.classList.remove('hidden');
+                folderBinGrid.classList.add('hidden');
+
+                renderList();
+            }
+        }
+
+        function renderList() {
+            const grid = document.getElementById('mediaGrid');
+            const emptyState = document.getElementById('emptyState');
+            const query = document.getElementById('searchInput').value.toLowerCase().trim();
+
+            const folderItems = mediaList.filter(i => i.folder === currentFolderId);
+            document.getElementById('badge-ongoing').textContent = folderItems.filter(i => i.category === 'ongoing').length;
+            document.getElementById('badge-willstart').textContent = folderItems.filter(i => i.category === 'willstart').length;
+            document.getElementById('badge-onhold').textContent = folderItems.filter(i => i.category === 'onhold').length;
+            document.getElementById('badge-bin').textContent = folderItems.filter(i => i.category === 'bin').length;
+
+            const filtered = folderItems.filter(item => {
+                const matchesTab = item.category === currentTab;
+                const matchesQuery = item.title.toLowerCase().includes(query) || (item.chapter && item.chapter.toString().toLowerCase().includes(query));
+                return matchesTab && matchesQuery;
+            });
+
+            grid.innerHTML = '';
+
+            if (!currentFolderId || folderList.filter(f => !f.deleted).length === 0) {
+                document.getElementById('emptyIcon').className = "fa-solid fa-folder-plus";
+                document.getElementById('emptyTitle').textContent = "No Folders Created";
+                document.getElementById('emptySubtitle').textContent = "Click 'New Folder' on the sidebar to create your first folder.";
+                emptyState.classList.remove('hidden');
+                emptyState.classList.add('flex');
+            } else if (filtered.length === 0) {
+                document.getElementById('emptyIcon').className = currentTab === 'bin' ? "fa-solid fa-trash-can" : "fa-solid fa-folder-open";
+                document.getElementById('emptyTitle').textContent = currentTab === 'bin' ? "Item Bin is empty" : "No items found";
+                document.getElementById('emptySubtitle').textContent = "No entries match your search query in this folder.";
+                emptyState.classList.remove('hidden');
+                emptyState.classList.add('flex');
+            } else {
+                emptyState.classList.add('hidden');
+                emptyState.classList.remove('flex');
+
+                filtered.forEach(item => {
+                    const originalIndex = mediaList.indexOf(item);
+                    const coverSrc = item.coverUrl || generateStylizedCover(item.title);
+                    const defaultUrl = item.url || `https://www.google.com/search?q=${encodeURIComponent(item.title)}`;
+
+                    const card = document.createElement('div');
+                    card.className = "bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden flex flex-col card-hover-effect group relative shadow-lg";
+
+                    // Badge text mapping for media card badge
+                    const categoryLabel = item.category === 'ongoing' ? (item.chapter || 'In Progress') : (item.category === 'willstart' ? 'Queue' : 'On-Hold');
+
+                    if (currentTab === 'bin') {
+                        card.innerHTML = `
+                            <div class="relative aspect-[3/4] w-full overflow-hidden bg-slate-950">
+                                <img src="${coverSrc}" class="w-full h-full object-cover grayscale opacity-60">
+                            </div>
+                            <div class="p-3.5 flex-1 flex flex-col justify-between bg-slate-900">
+                                <h3 class="font-bold text-xs sm:text-sm text-slate-300 line-clamp-2">${escapeXml(item.title)}</h3>
+                                <div class="mt-3 pt-2.5 border-t border-slate-800 flex items-center space-x-2">
+                                    <button onclick="restoreMedia(${originalIndex})" class="flex-1 py-1.5 rounded-lg bg-emerald-500/20 hover:bg-emerald-500 border border-emerald-500/30 text-emerald-400 hover:text-slate-950 font-bold text-xs transition flex items-center justify-center space-x-1">
+                                        <i class="fa-solid fa-rotate-left"></i><span>Restore</span>
+                                    </button>
+                                    <button onclick="permanentlyDeleteMedia(${originalIndex})" class="py-1.5 px-2.5 rounded-lg bg-rose-500/20 hover:bg-rose-500 border border-rose-500/30 text-rose-400 hover:text-white font-bold text-xs transition">
+                                        <i class="fa-solid fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>`;
+                    } else {
+                        card.innerHTML = `
+                            <div class="relative aspect-[3/4] w-full overflow-hidden bg-slate-950">
+                                <img src="${coverSrc}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+                                <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent opacity-80"></div>
+                                <div class="absolute top-2.5 right-2.5 z-10">
+                                    <span class="bg-slate-950/80 backdrop-blur border border-slate-700/80 text-brand-400 text-[11px] font-bold font-mono px-2.5 py-1 rounded-lg">
+                                        ${categoryLabel}
+                                    </span>
+                                </div>
+                                <a href="${defaultUrl}" target="_blank" class="absolute inset-0 z-0"></a>
+                                <div class="absolute top-2.5 left-2.5 z-10 opacity-0 group-hover:opacity-100 transition-opacity flex space-x-1">
+                                    <button onclick="openMediaModal('edit', ${originalIndex})" class="bg-slate-900/90 text-slate-300 hover:text-white p-2 rounded-lg border border-slate-700 text-xs">
+                                        <i class="fa-solid fa-pen-to-square"></i>
+                                    </button>
+                                    <button onclick="deleteMedia(${originalIndex})" class="bg-slate-900/90 text-rose-400 hover:text-rose-300 p-2 rounded-lg border border-slate-700 text-xs">
+                                        <i class="fa-solid fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="p-3.5 flex-1 flex flex-col justify-between bg-slate-900">
+                                <h3 class="font-bold text-xs sm:text-sm text-slate-100 line-clamp-2 leading-snug group-hover:text-brand-400 transition-colors">
+                                    <a href="${defaultUrl}" target="_blank" class="hover:underline">${escapeXml(item.title)}</a>
+                                </h3>
+                                <div class="mt-3 pt-2.5 border-t border-slate-800/80 flex items-center justify-between">
+                                    ${item.category === 'ongoing' ? `
+                                        <span class="text-[11px] font-semibold text-slate-500 uppercase">Progress</span>
+                                        <div class="flex items-center space-x-1">
+                                            <button onclick="changeProgress(${originalIndex}, -1)" class="w-6 h-6 rounded-md bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs flex items-center justify-center transition">
+                                                <i class="fa-solid fa-minus text-[10px]"></i>
+                                            </button>
+                                            <button onclick="changeProgress(${originalIndex}, 1)" class="w-6 h-6 rounded-md bg-brand-500/20 hover:bg-brand-500 border border-brand-500/30 text-brand-400 hover:text-slate-950 font-bold text-xs flex items-center justify-center transition">
+                                                <i class="fa-solid fa-plus text-[10px]"></i>
+                                            </button>
+                                        </div>
+                                    ` : `
+                                        <button onclick="moveToOngoing(${originalIndex})" class="w-full py-1.5 rounded-lg bg-brand-500/10 hover:bg-brand-500 border border-brand-500/20 hover:border-brand-500 text-brand-400 hover:text-slate-950 font-bold text-xs transition flex items-center justify-center space-x-1.5">
+                                            <i class="fa-solid fa-play text-[9px]"></i><span>Start Progress</span>
+                                        </button>
+                                    `}
+                                </div>
+                            </div>`;
+                    }
+                    grid.appendChild(card);
+                });
+            }
+        }
+
+        function renderFolderBinGrid() {
+            const binGrid = document.getElementById('folderBinGrid');
+            const emptyState = document.getElementById('emptyState');
+            const deletedFolders = folderList.filter(f => f.deleted);
+
+            binGrid.innerHTML = '';
+
+            if (deletedFolders.length === 0) {
+                document.getElementById('emptyIcon').className = "fa-solid fa-trash-can";
+                document.getElementById('emptyTitle').textContent = "Folder Bin is Empty";
+                document.getElementById('emptySubtitle').textContent = "No deleted folders in the trash bin.";
+                emptyState.classList.remove('hidden');
+                emptyState.classList.add('flex');
+            } else {
+                emptyState.classList.add('hidden');
+                emptyState.classList.remove('flex');
+
+                deletedFolders.forEach(folder => {
+                    const itemCount = mediaList.filter(m => m.folder === folder.id).length;
+                    const card = document.createElement('div');
+                    card.className = "bg-slate-900 border border-slate-800 rounded-2xl p-4 flex items-center justify-between shadow-md";
+
+                    const coverAvatar = folder.coverUrl 
+                        ? `<img src="${folder.coverUrl}" class="w-12 h-12 rounded-xl object-cover">`
+                        : `<div class="w-12 h-12 rounded-xl bg-slate-800 flex items-center justify-center text-slate-400 text-xl"><i class="${folder.icon || 'fa-solid fa-folder'}"></i></div>`;
+
+                    card.innerHTML = `
+                        <div class="flex items-center space-x-3">
+                            ${coverAvatar}
+                            <div>
+                                <h3 class="font-bold text-slate-200 text-sm">${escapeXml(folder.name)}</h3>
+                                <p class="text-xs text-slate-500">${itemCount} items inside</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <button onclick="restoreFolder('${folder.id}')" class="px-3 py-1.5 bg-emerald-500/20 hover:bg-emerald-500 border border-emerald-500/30 text-emerald-400 hover:text-slate-950 rounded-xl font-bold text-xs transition flex items-center space-x-1">
+                                <i class="fa-solid fa-rotate-left"></i><span>Restore</span>
+                            </button>
+                            <button onclick="permanentlyDeleteFolder('${folder.id}')" class="p-2 bg-rose-500/20 hover:bg-rose-500 border border-rose-500/30 text-rose-400 hover:text-white rounded-xl text-xs transition">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                        </div>
+                    `;
+                    binGrid.appendChild(card);
+                });
+            }
+        }
+
+        // Folder Operations
+        function openFolderModal(mode, folderId = null) {
+            const modal = document.getElementById('folderModal');
+            const title = document.getElementById('folderModalTitle');
+            const idInput = document.getElementById('folderEditId');
+
+            document.getElementById('folderFileInput').value = '';
+
+            if (mode === 'edit' && folderId) {
+                const folder = folderList.find(f => f.id === folderId);
+                if (!folder) return;
+                title.textContent = 'Edit Folder';
+                idInput.value = folder.id;
+                document.getElementById('folderNameInput').value = folder.name;
+                document.getElementById('folderCoverInput').value = folder.coverUrl || '';
+                document.getElementById('folderIconInput').value = folder.icon || 'fa-solid fa-folder';
+            } else {
+                title.textContent = 'Add New Folder';
+                idInput.value = '';
+                document.getElementById('folderForm').reset();
+            }
+
+            modal.classList.remove('hidden');
+        }
+
+        function closeFolderModal() {
+            document.getElementById('folderModal').classList.add('hidden');
+        }
+
+        async function saveFolder(e) {
+            e.preventDefault();
+            const id = document.getElementById('folderEditId').value;
+            const name = document.getElementById('folderNameInput').value.trim();
+            let coverUrl = document.getElementById('folderCoverInput').value.trim();
+            const icon = document.getElementById('folderIconInput').value.trim() || 'fa-solid fa-folder';
+            const fileInput = document.getElementById('folderFileInput');
+
+            if (fileInput.files && fileInput.files[0]) {
+                try {
+                    coverUrl = await readFileAsBase64(fileInput.files[0]);
+                } catch (err) {
+                    console.error("Error reading folder cover file:", err);
+                }
+            }
+
+            if (id) {
+                const folder = folderList.find(f => f.id === id);
+                if (folder) {
+                    folder.name = name;
+                    folder.coverUrl = coverUrl;
+                    folder.icon = icon;
+                }
+            } else {
+                const newId = name.toLowerCase().replace(/[^a-z0-9]/g, '-') + '-' + Date.now();
+                folderList.push({ id: newId, name, coverUrl, icon, deleted: false });
+                currentFolderId = newId;
+            }
+
+            saveToLocalStorage();
+            closeFolderModal();
+            renderFolderNav();
+            switchFolder(currentFolderId);
+        }
+
+        function editCurrentFolder() {
+            openFolderModal('edit', currentFolderId);
+        }
+
+        function deleteCurrentFolder() {
+            if (confirm(`Move folder to Folder Trash Bin?`)) {
+                const folder = folderList.find(f => f.id === currentFolderId);
+                if (folder) {
+                    folder.deleted = true;
+                    saveToLocalStorage();
+                    const active = folderList.filter(f => !f.deleted);
+                    currentFolderId = active.length > 0 ? active[0].id : '';
+                    renderFolderNav();
+                    switchFolder(currentFolderId);
+                }
+            }
+        }
+
+        function restoreFolder(folderId) {
+            const folder = folderList.find(f => f.id === folderId);
+            if (folder) {
+                folder.deleted = false;
+                if (!currentFolderId) currentFolderId = folder.id;
+                saveToLocalStorage();
+                renderFolderNav();
+                renderFolderBinGrid();
+            }
+        }
+
+        function permanentlyDeleteFolder(folderId) {
+            if (confirm("Permanently remove folder and all media items inside?")) {
+                folderList = folderList.filter(f => f.id !== folderId);
+                mediaList = mediaList.filter(m => m.folder !== folderId);
+                saveToLocalStorage();
+                renderFolderNav();
+                renderFolderBinGrid();
+            }
+        }
+
+        // Tab & Search Handlers
+        function switchTab(tab) {
+            currentTab = tab;
+            const activeClass = "flex-1 py-2.5 px-3 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center justify-center space-x-2 bg-brand-500 text-slate-950 shadow-md shadow-brand-500/10 whitespace-nowrap";
+            const inactiveClass = "flex-1 py-2.5 px-3 rounded-xl text-xs sm:text-sm font-semibold transition-all flex items-center justify-center space-x-2 text-slate-400 hover:text-white whitespace-nowrap";
+
+            document.getElementById('tab-ongoing').className = tab === 'ongoing' ? activeClass : inactiveClass;
+            document.getElementById('tab-willstart').className = tab === 'willstart' ? activeClass : inactiveClass;
+            document.getElementById('tab-onhold').className = tab === 'onhold' ? activeClass : inactiveClass;
+            document.getElementById('tab-bin').className = tab === 'bin' ? activeClass : inactiveClass;
+
+            const emptyBtn = document.getElementById('emptyBinBtn');
+            if (tab === 'bin') { emptyBtn.classList.remove('hidden'); emptyBtn.classList.add('flex'); }
+            else { emptyBtn.classList.add('hidden'); emptyBtn.classList.remove('flex'); }
+
+            renderList();
+        }
+
+        function handleSearch() {
+            const val = document.getElementById('searchInput').value;
+            document.getElementById('clearSearchBtn').classList.toggle('hidden', val.length === 0);
+            renderList();
+        }
+
+        function clearSearch() {
+            document.getElementById('searchInput').value = '';
+            document.getElementById('clearSearchBtn').classList.add('hidden');
+            renderList();
+        }
+
+        // Item Operations
+        function changeProgress(index, delta) {
+            let current = mediaList[index].chapter || "1";
+            let match = current.match(/\d+/);
+            if (match) {
+                let num = Math.max(1, parseInt(match[0]) + delta);
+                mediaList[index].chapter = current.replace(/\d+/, num);
+                saveToLocalStorage();
+                renderList();
+            }
+        }
+
+        function moveToOngoing(index) {
+            mediaList[index].category = 'ongoing';
+            saveToLocalStorage();
+            switchTab('ongoing');
+        }
+
+        function deleteMedia(index) {
+            mediaList[index].previousCategory = mediaList[index].category;
+            mediaList[index].category = 'bin';
+            saveToLocalStorage();
+            renderList();
+        }
+
+        function restoreMedia(index) {
+            mediaList[index].category = mediaList[index].previousCategory || 'ongoing';
+            delete mediaList[index].previousCategory;
+            saveToLocalStorage();
+            renderList();
+        }
+
+        function permanentlyDeleteMedia(index) {
+            if (confirm(`Permanently remove item?`)) {
+                mediaList.splice(index, 1);
+                saveToLocalStorage();
+                renderList();
+            }
+        }
+
+        function emptyBin() {
+            if (confirm("Permanently delete all items in Item Bin for this folder?")) {
+                mediaList = mediaList.filter(item => !(item.folder === currentFolderId && item.category === 'bin'));
+                saveToLocalStorage();
+                renderList();
+            }
+        }
+
+        function openMediaModal(mode, index = -1) {
+            const activeFolders = folderList.filter(f => !f.deleted);
+            if (activeFolders.length === 0) {
+                alert("Please create at least one folder before adding items.");
+                openFolderModal('add');
+                return;
+            }
+
+            const modal = document.getElementById('mediaModal');
+            const title = document.getElementById('mediaModalTitle');
+            const editIndex = document.getElementById('editIndex');
+
+            document.getElementById('formFileInput').value = '';
+
+            if (mode === 'edit' && index >= 0) {
+                title.textContent = 'Edit Item Details';
+                editIndex.value = index;
+                document.getElementById('formTitle').value = mediaList[index].title;
+                document.getElementById('formFolder').value = mediaList[index].folder || currentFolderId;
+                document.getElementById('formCategory').value = mediaList[index].category === 'bin' ? (mediaList[index].previousCategory || 'ongoing') : mediaList[index].category;
+                document.getElementById('formChapter').value = mediaList[index].chapter || '';
+                document.getElementById('formCoverUrl').value = mediaList[index].coverUrl || '';
+                document.getElementById('formUrl').value = mediaList[index].url || '';
+            } else {
+                title.textContent = 'Add New Item';
+                editIndex.value = -1;
+                document.getElementById('mediaForm').reset();
+                document.getElementById('formFolder').value = currentFolderId || activeFolders[0].id;
+            }
+
+            modal.classList.remove('hidden');
+        }
+
+        function closeMediaModal() {
+            document.getElementById('mediaModal').classList.add('hidden');
+        }
+
+        async function saveMedia(e) {
+            e.preventDefault();
+            const index = parseInt(document.getElementById('editIndex').value);
+            let coverUrl = document.getElementById('formCoverUrl').value.trim();
+            const fileInput = document.getElementById('formFileInput');
+
+            if (fileInput.files && fileInput.files[0]) {
+                try {
+                    coverUrl = await readFileAsBase64(fileInput.files[0]);
+                } catch (err) {
+                    console.error("Error reading item cover file:", err);
+                }
+            }
+
+            const item = {
+                title: document.getElementById('formTitle').value.trim(),
+                folder: document.getElementById('formFolder').value,
+                category: document.getElementById('formCategory').value,
+                chapter: document.getElementById('formChapter').value.trim() || '1',
+                coverUrl: coverUrl,
+                url: document.getElementById('formUrl').value.trim()
+            };
+
+            if (index >= 0) mediaList[index] = item;
+            else mediaList.unshift(item);
+
+            saveToLocalStorage();
+            closeMediaModal();
+            renderFolderNav();
+            renderList();
+        }
+
+        window.onload = initApp;
+    </script>
+</body>
+</html>
