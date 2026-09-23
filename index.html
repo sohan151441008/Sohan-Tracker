@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Media Vault - Multi-API Sync & Release Tracker</title>
+    <title>Media Vault - Tracker</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome Icons CDN -->
@@ -58,7 +58,7 @@
                     <h1 class="text-xl font-extrabold tracking-tight font-display bg-gradient-to-r from-slate-100 via-slate-200 to-brand-400 bg-clip-text text-transparent">
                         MEDIA<span class="text-brand-500">VAULT</span>
                     </h1>
-                    <p class="text-[10px] uppercase font-bold tracking-widest text-slate-400 -mt-1">Multi-API Track & Sync</p>
+                    <p class="text-[10px] uppercase font-bold tracking-widest text-slate-400 -mt-1">Personal Collection Tracker</p>
                 </div>
             </div>
             
@@ -66,8 +66,8 @@
                 <button onclick="openMediaModal('add')" class="bg-brand-500 hover:bg-brand-400 text-slate-950 px-4 py-2 rounded-xl font-bold text-sm transition-all flex items-center shadow-md shadow-brand-500/20 active:scale-95">
                     <i class="fa-solid fa-plus mr-2"></i> Add Item
                 </button>
-                <button onclick="openSettingsModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 p-2.5 rounded-xl text-sm font-bold transition-all flex items-center justify-center border border-slate-700/80 active:scale-95" title="Vault Settings & API Integration">
-                    <i class="fa-solid fa-gear text-lg"></i>
+                <button onclick="openSettingsModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 p-2.5 rounded-xl text-sm font-bold transition-all flex items-center justify-center border border-slate-700/80 active:scale-95" title="Vault Backup & Restore">
+                    <i class="fa-solid fa-database text-lg"></i>
                 </button>
             </div>
         </div>
@@ -159,13 +159,8 @@
                     </button>
                 </div>
 
-                <!-- Search Field & Refresh Updates -->
+                <!-- Search Field -->
                 <div class="flex items-center space-x-3 w-full xl:w-auto">
-                    <button onclick="checkAllReleases()" title="Check All Registered APIs for New Releases" class="bg-slate-800 hover:bg-slate-700 text-brand-400 border border-slate-700/80 px-3.5 py-2.5 rounded-xl text-xs font-bold transition flex items-center space-x-2 whitespace-nowrap">
-                        <i class="fa-solid fa-rotate text-sm"></i>
-                        <span>Check Updates</span>
-                    </button>
-
                     <button id="emptyBinBtn" onclick="emptyBin()" title="Empty Bin Permanently" class="hidden bg-rose-950/60 border border-rose-800/80 text-rose-300 hover:bg-rose-900 px-3 py-2.5 rounded-xl text-xs font-bold transition-all active:scale-95 items-center space-x-1.5 whitespace-nowrap">
                         <i class="fa-solid fa-dumpster-fire"></i>
                         <span>Empty Items</span>
@@ -204,81 +199,32 @@
         </main>
     </div>
 
-    <!-- Modal: Settings (Backup & Web API Provider Management) -->
+    <!-- Modal: Settings (Backup & Restore) -->
     <div id="settingsModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-3xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-md overflow-hidden shadow-2xl flex flex-col">
             <div class="px-6 py-4 border-b border-slate-800 flex justify-between items-center bg-slate-900/50 shrink-0">
                 <div class="flex items-center space-x-2">
-                    <i class="fa-solid fa-sliders text-brand-400 text-lg"></i>
-                    <h3 class="font-bold text-lg text-slate-100 font-display">Vault Settings & API Integration</h3>
+                    <i class="fa-solid fa-database text-brand-400 text-lg"></i>
+                    <h3 class="font-bold text-lg text-slate-100 font-display">Backup & Restore</h3>
                 </div>
                 <button onclick="closeSettingsModal()" class="text-slate-500 hover:text-slate-200 transition">
                     <i class="fa-solid fa-xmark text-lg"></i>
                 </button>
             </div>
             
-            <div class="p-6 space-y-6 overflow-y-auto custom-scrollbar flex-1">
-                <!-- Section 1: Backup & Restore -->
-                <div class="bg-slate-950/60 border border-slate-800 rounded-xl p-4 space-y-3">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <h4 class="font-bold text-sm text-slate-100 flex items-center gap-2">
-                                <i class="fa-solid fa-database text-brand-400"></i> Export & Import (Backup)
-                            </h4>
-                            <p class="text-xs text-slate-400 mt-0.5">Download or upload your complete library as a JSON file.</p>
-                        </div>
-                    </div>
-                    <div class="flex flex-wrap gap-3 pt-2">
-                        <button onclick="exportDataJSON()" class="bg-slate-800 hover:bg-slate-700 text-brand-400 border border-slate-700/80 px-4 py-2 rounded-xl text-xs font-bold transition flex items-center space-x-2">
-                            <i class="fa-solid fa-download"></i>
-                            <span>Export Library JSON</span>
-                        </button>
-                        <label class="bg-brand-500 hover:bg-brand-400 text-slate-950 px-4 py-2 rounded-xl text-xs font-bold transition flex items-center space-x-2 cursor-pointer shadow-md shadow-brand-500/10">
-                            <i class="fa-solid fa-upload"></i>
-                            <span>Import Library JSON</span>
-                            <input type="file" id="importJsonFile" accept=".json" onchange="importDataJSON(event)" class="hidden">
-                        </label>
-                    </div>
-                </div>
-
-                <!-- Section 2: Manage Website & Media APIs -->
-                <div class="bg-slate-950/60 border border-slate-800 rounded-xl p-4 space-y-4">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <h4 class="font-bold text-sm text-slate-100 flex items-center gap-2">
-                                <i class="fa-solid fa-plug text-brand-400"></i> Imported Website & Media APIs
-                            </h4>
-                            <p class="text-xs text-slate-400 mt-0.5">Add custom API endpoints for MangaDex, Manganato, Movies (OMDb/TMDB), or custom scrapers.</p>
-                        </div>
-                        <button onclick="openApiConfigForm()" class="bg-brand-500/10 hover:bg-brand-500/20 text-brand-400 border border-brand-500/30 px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center space-x-1.5">
-                            <i class="fa-solid fa-plus"></i>
-                            <span>Add API Provider</span>
-                        </button>
-                    </div>
-
-                    <!-- API Provider Setup Form (Hidden by default) -->
-                    <div id="apiConfigForm" class="hidden bg-slate-900 border border-slate-800 rounded-xl p-4 space-y-3">
-                        <h5 class="text-xs font-bold uppercase tracking-wider text-slate-300">New Website API Provider</h5>
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                            <input type="text" id="apiName" placeholder="API Name (e.g., MangaDex, Manganato Scraper, OMDb)" class="bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-brand-500">
-                            <select id="apiType" class="bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-brand-500">
-                                <option value="mangadex">MangaDex (Official Built-in)</option>
-                                <option value="manganato">Manganato / Custom Scraper API</option>
-                                <option value="omdb">OMDb Movie & Series API</option>
-                                <option value="generic">Generic REST API Endpoint</option>
-                            </select>
-                        </div>
-                        <input type="text" id="apiUrl" placeholder="Base Endpoint URL (e.g. https://api.mangadex.org or https://www.omdbapi.com/?apikey=YOURKEY)" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-brand-500">
-                        <div class="flex justify-end space-x-2 pt-1">
-                            <button onclick="closeApiConfigForm()" class="px-3 py-1.5 rounded-xl text-xs font-bold text-slate-400 hover:bg-slate-800 transition">Cancel</button>
-                            <button onclick="saveApiProvider()" class="px-4 py-1.5 rounded-xl text-xs font-bold bg-brand-500 hover:bg-brand-400 text-slate-950 transition">Save API Provider</button>
-                        </div>
-                    </div>
-
-                    <!-- API List Container -->
-                    <div id="apiListContainer" class="space-y-2">
-                        <!-- Populated dynamically via JS -->
-                    </div>
+            <div class="p-6 space-y-4">
+                <p class="text-xs text-slate-400">Export your complete library data into a JSON file for local backup, or import an existing backup file to restore your media vault.</p>
+                
+                <div class="flex flex-col space-y-3 pt-2">
+                    <button onclick="exportDataJSON()" class="w-full bg-slate-800 hover:bg-slate-700 text-brand-400 border border-slate-700/80 px-4 py-3 rounded-xl text-xs font-bold transition flex items-center justify-center space-x-2">
+                        <i class="fa-solid fa-download"></i>
+                        <span>Export Library JSON</span>
+                    </button>
+                    <label class="w-full bg-brand-500 hover:bg-brand-400 text-slate-950 px-4 py-3 rounded-xl text-xs font-bold transition flex items-center justify-center space-x-2 cursor-pointer shadow-md shadow-brand-500/10">
+                        <i class="fa-solid fa-upload"></i>
+                        <span>Import Library JSON</span>
+                        <input type="file" id="importJsonFile" accept=".json" onchange="importDataJSON(event)" class="hidden">
+                    </label>
                 </div>
             </div>
 
@@ -306,7 +252,7 @@
                 </div>
 
                 <div>
-                    <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">Folder Cover Image (URL or Local PC File)</label>
+                    <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">Folder Cover Image (URL or Local File)</label>
                     <div class="space-y-2">
                         <input type="url" id="folderCoverInput" placeholder="https://domain.com/folder-cover.jpg" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-brand-500">
                         <div class="flex items-center space-x-2 text-xs text-slate-500">
@@ -331,7 +277,7 @@
         </div>
     </div>
 
-    <!-- Modal: Add / Edit Media Item with Web API Integration Selector -->
+    <!-- Modal: Add / Edit Media Item -->
     <div id="mediaModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
         <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-lg overflow-hidden shadow-2xl">
             <div class="px-6 py-4 border-b border-slate-800 flex justify-between items-center bg-slate-900/50">
@@ -346,23 +292,6 @@
                 <div>
                     <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">Title *</label>
                     <input type="text" id="formTitle" required placeholder="e.g. Solo Leveling or Inception" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-brand-500">
-                </div>
-
-                <!-- API Integration Selector Box -->
-                <div class="bg-slate-950/80 border border-slate-800 rounded-xl p-3.5 space-y-2">
-                    <label class="block text-xs font-bold uppercase tracking-wider text-brand-400 flex items-center gap-1.5">
-                        <i class="fa-solid fa-wand-magic-sparkles"></i> Select API Provider to Fetch Cover & Releases
-                    </label>
-                    <div class="flex space-x-2">
-                        <select id="formApiSelect" class="flex-1 bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-brand-500">
-                            <!-- Populated with imported APIs -->
-                        </select>
-                        <button type="button" onclick="fetchItemDataFromApi()" id="fetchApiDataBtn" class="bg-brand-500 hover:bg-brand-400 text-slate-950 px-3 py-2 rounded-xl text-xs font-bold transition flex items-center space-x-1 shrink-0">
-                            <i class="fa-solid fa-cloud-arrow-down"></i>
-                            <span>Fetch Data & Sync</span>
-                        </button>
-                    </div>
-                    <p id="apiFetchMessage" class="text-[11px] text-slate-500 italic hidden"></p>
                 </div>
 
                 <div class="grid grid-cols-2 gap-4">
@@ -388,13 +317,13 @@
                         <input type="text" id="formChapter" placeholder="e.g. Ch 10" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-brand-500">
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">Latest Release Status</label>
-                        <input type="text" id="formLatestRelease" placeholder="e.g. Latest Ch 15 available" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-brand-500">
+                        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">Notes / Release Info</label>
+                        <input type="text" id="formLatestRelease" placeholder="e.g. Next episode Friday" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-brand-500">
                     </div>
                 </div>
 
                 <div>
-                    <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">Cover Image (URL or Local PC File)</label>
+                    <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">Cover Image (URL or Local File)</label>
                     <div class="space-y-2">
                         <input type="url" id="formCoverUrl" placeholder="https://domain.com/cover.jpg" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-brand-500">
                         <div class="flex items-center space-x-2 text-xs text-slate-500">
@@ -420,18 +349,10 @@
     </div>
 
     <script>
-        // No folders by default so the user starts with a clean slate
         const initialFolders = [];
-
-        const defaultApis = [
-            { id: 'mangadex', name: 'MangaDex API', type: 'mangadex', url: 'https://api.mangadex.org' },
-            { id: 'manganato', name: 'Manganato Provider', type: 'manganato', url: 'https://manganato.com' },
-            { id: 'omdb', name: 'OMDb Movie API', type: 'omdb', url: 'https://www.omdbapi.com' }
-        ];
 
         let folderList = [];
         let mediaList = [];
-        let apiProviderList = [];
         let currentFolderId = '';
         let currentTab = 'ongoing';
 
@@ -496,13 +417,11 @@
         }
 
         function initApp() {
-            const savedFolders = localStorage.getItem('mv_folders_v3');
-            const savedMedia = localStorage.getItem('mv_media_v3');
-            const savedApis = localStorage.getItem('mv_apis_v3');
+            const savedFolders = localStorage.getItem('mv_folders_v4');
+            const savedMedia = localStorage.getItem('mv_media_v4');
 
             folderList = savedFolders ? JSON.parse(savedFolders) : initialFolders;
             mediaList = savedMedia ? JSON.parse(savedMedia) : [];
-            apiProviderList = savedApis ? JSON.parse(savedApis) : defaultApis;
 
             const activeFolders = folderList.filter(f => !f.deleted);
             if (activeFolders.length > 0) {
@@ -514,13 +433,11 @@
             saveToLocalStorage();
             renderFolderNav();
             switchFolder(currentFolderId);
-            renderApiList();
         }
 
         function saveToLocalStorage() {
-            localStorage.setItem('mv_folders_v3', JSON.stringify(folderList));
-            localStorage.setItem('mv_media_v3', JSON.stringify(mediaList));
-            localStorage.setItem('mv_apis_v3', JSON.stringify(apiProviderList));
+            localStorage.setItem('mv_folders_v4', JSON.stringify(folderList));
+            localStorage.setItem('mv_media_v4', JSON.stringify(mediaList));
         }
 
         function renderFolderNav() {
@@ -689,10 +606,9 @@
                                 </div>
                             </div>`;
                     } else {
-                        // In Progress Release Alert Badge
-                        const updateBadge = (item.category === 'ongoing' && item.latestRelease) ? `
-                            <div class="mb-2 px-2.5 py-1 bg-emerald-950/80 border border-emerald-500/40 rounded-lg flex items-center space-x-1.5 text-emerald-400 text-[10px] font-bold">
-                                <i class="fa-solid fa-bell text-emerald-400 animate-pulse"></i>
+                        const noteBadge = item.latestRelease ? `
+                            <div class="mb-2 px-2.5 py-1 bg-slate-800 border border-slate-700/60 rounded-lg flex items-center space-x-1.5 text-slate-300 text-[10px] font-semibold">
+                                <i class="fa-solid fa-info-circle text-brand-400"></i>
                                 <span class="truncate">${escapeXml(item.latestRelease)}</span>
                             </div>
                         ` : '';
@@ -718,7 +634,7 @@
                             </div>
                             <div class="p-3.5 flex-1 flex flex-col justify-between bg-slate-900">
                                 <div>
-                                    ${updateBadge}
+                                    ${noteBadge}
                                     <h3 class="font-bold text-xs sm:text-sm text-slate-100 line-clamp-2 leading-snug group-hover:text-brand-400 transition-colors">
                                         <a href="${defaultUrl}" target="_blank" class="hover:underline">${escapeXml(item.title)}</a>
                                     </h3>
@@ -795,10 +711,8 @@
             }
         }
 
-        // Settings & Website API Integration Handlers
+        // Backup & Settings Handlers
         function openSettingsModal() {
-            renderFolderNav();
-            renderApiList();
             document.getElementById('settingsModal').classList.remove('hidden');
         }
 
@@ -806,174 +720,10 @@
             document.getElementById('settingsModal').classList.add('hidden');
         }
 
-        function openApiConfigForm() {
-            document.getElementById('apiConfigForm').classList.remove('hidden');
-        }
-
-        function closeApiConfigForm() {
-            document.getElementById('apiConfigForm').classList.add('hidden');
-            document.getElementById('apiName').value = '';
-            document.getElementById('apiUrl').value = '';
-        }
-
-        function saveApiProvider() {
-            const name = document.getElementById('apiName').value.trim();
-            const type = document.getElementById('apiType').value;
-            const url = document.getElementById('apiUrl').value.trim();
-
-            if (!name || !url) {
-                alert("Please fill in API name and URL");
-                return;
-            }
-
-            const newApi = {
-                id: 'api-' + Date.now(),
-                name: name,
-                type: type,
-                url: url
-            };
-
-            apiProviderList.push(newApi);
-            saveToLocalStorage();
-            renderApiList();
-            closeApiConfigForm();
-        }
-
-        function deleteApiProvider(apiId) {
-            if (confirm("Remove this API provider registration?")) {
-                apiProviderList = apiProviderList.filter(a => a.id !== apiId);
-                saveToLocalStorage();
-                renderApiList();
-            }
-        }
-
-        function renderApiList() {
-            const container = document.getElementById('apiListContainer');
-            const select = document.getElementById('formApiSelect');
-            container.innerHTML = '';
-            select.innerHTML = '<option value="">-- Direct Fetch / Default API --</option>';
-
-            apiProviderList.forEach(api => {
-                const item = document.createElement('div');
-                item.className = "bg-slate-900 border border-slate-800 rounded-xl p-3 flex items-center justify-between";
-                item.innerHTML = `
-                    <div class="flex items-center space-x-3">
-                        <div class="w-8 h-8 rounded-lg bg-brand-500/10 text-brand-400 flex items-center justify-center font-bold text-xs">
-                            <i class="fa-solid fa-code flex shrink-0"></i>
-                        </div>
-                        <div>
-                            <h5 class="font-bold text-xs text-slate-200">${escapeXml(api.name)}</h5>
-                            <p class="text-[10px] text-slate-500 font-mono truncate max-w-xs">${escapeXml(api.url)}</p>
-                        </div>
-                    </div>
-                    <button onclick="deleteApiProvider('${api.id}')" class="text-rose-400 hover:text-rose-300 p-1.5 rounded-lg text-xs">
-                        <i class="fa-solid fa-trash"></i>
-                    </button>
-                `;
-                container.appendChild(item);
-
-                const opt = document.createElement('option');
-                opt.value = api.id;
-                opt.textContent = `${api.name} (${api.type})`;
-                select.appendChild(opt);
-            });
-        }
-
-        // Execute dynamic API lookup for item title
-        async function fetchItemDataFromApi() {
-            const title = document.getElementById('formTitle').value.trim();
-            const apiId = document.getElementById('formApiSelect').value;
-            const msg = document.getElementById('apiFetchMessage');
-
-            if (!title) {
-                alert("Please type a Title first before fetching API data.");
-                return;
-            }
-
-            msg.classList.remove('hidden');
-            msg.textContent = "Connecting to selected API provider and fetching details...";
-
-            const selectedApi = apiProviderList.find(a => a.id === apiId);
-            const apiType = selectedApi ? selectedApi.type : 'mangadex';
-
-            try {
-                if (apiType === 'mangadex') {
-                    const res = await fetch(`https://api.mangadex.org/manga?title=${encodeURIComponent(title)}&limit=1&includes[]=cover_art`);
-                    if (res.ok) {
-                        const data = await res.json();
-                        if (data.data && data.data.length > 0) {
-                            const manga = data.data[0];
-                            const mangaId = manga.id;
-                            const coverRel = manga.relationships.find(r => r.type === 'cover_art');
-                            const fileName = coverRel ? coverRel.attributes?.fileName : '';
-                            
-                            if (fileName) {
-                                document.getElementById('formCoverUrl').value = `https://uploads.mangadex.org/covers/${mangaId}/${fileName}.512.jpg`;
-                            }
-                            document.getElementById('formUrl').value = `https://mangadex.org/title/${mangaId}`;
-                            document.getElementById('formLatestRelease').value = `Latest Ch ${manga.attributes.lastChapter || 'Updated'}`;
-                            msg.textContent = "Successfully imported cover art and chapter info from MangaDex!";
-                        } else {
-                            msg.textContent = "No matching title found on API provider.";
-                        }
-                    }
-                } else if (apiType === 'omdb') {
-                    const omdbKey = selectedApi.url.includes('apikey=') ? selectedApi.url : 'https://www.omdbapi.com/?apikey=trilogy';
-                    const res = await fetch(`${omdbKey}&t=${encodeURIComponent(title)}`);
-                    if (res.ok) {
-                        const data = await res.json();
-                        if (data.Response !== "False") {
-                            if (data.Poster && data.Poster !== "N/A") document.getElementById('formCoverUrl').value = data.Poster;
-                            document.getElementById('formLatestRelease').value = `Released: ${data.Year || 'New'}`;
-                            msg.textContent = `Imported Movie/Series details from OMDb! (${data.Year})`;
-                        } else {
-                            msg.textContent = "Title not found in Movie API.";
-                        }
-                    }
-                } else {
-                    // Fallback / Manganato & Generic API
-                    document.getElementById('formLatestRelease').value = "Synced with API Provider";
-                    msg.textContent = "Provider linked! Settings and endpoint mapped.";
-                }
-            } catch(e) {
-                msg.textContent = "Error communicating with the selected API provider URL.";
-            }
-        }
-
-        // Global check updates across all in-progress entries
-        async function checkAllReleases() {
-            const ongoingItems = mediaList.filter(i => i.category === 'ongoing');
-            if (ongoingItems.length === 0) {
-                alert("No items currently in 'In Progress' tab to check updates for.");
-                return;
-            }
-
-            alert(`Checking release updates across ${ongoingItems.length} active titles...`);
-            
-            for (let item of ongoingItems) {
-                try {
-                    const res = await fetch(`https://api.mangadex.org/manga?title=${encodeURIComponent(item.title)}&limit=1`);
-                    if (res.ok) {
-                        const data = await res.json();
-                        if (data.data && data.data.length > 0) {
-                            const lastCh = data.data[0].attributes.lastChapter;
-                            if (lastCh) {
-                                item.latestRelease = `New Chapter ${lastCh} Available!`;
-                            }
-                        }
-                    }
-                } catch(e) {}
-            }
-
-            saveToLocalStorage();
-            renderList();
-        }
-
         function exportDataJSON() {
             const payload = {
                 folders: folderList,
                 media: mediaList,
-                apis: apiProviderList,
                 exportDate: new Date().toISOString()
             };
             const jsonStr = JSON.stringify(payload, null, 2);
@@ -997,10 +747,8 @@
                     if (data.folders && Array.isArray(data.folders) && data.media && Array.isArray(data.media)) {
                         folderList = data.folders;
                         mediaList = data.media;
-                        if (data.apis) apiProviderList = data.apis;
                         saveToLocalStorage();
                         renderFolderNav();
-                        renderApiList();
                         if (folderList.length > 0) switchFolder(folderList[0].id);
                         else switchFolder('');
                         alert("Library imported successfully!");
@@ -1202,14 +950,11 @@
                 return;
             }
 
-            renderApiList();
-
             const modal = document.getElementById('mediaModal');
             const title = document.getElementById('mediaModalTitle');
             const editIndex = document.getElementById('editIndex');
 
             document.getElementById('formFileInput').value = '';
-            document.getElementById('apiFetchMessage').classList.add('hidden');
 
             if (mode === 'edit' && index >= 0) {
                 title.textContent = 'Edit Item Details';
@@ -1221,7 +966,6 @@
                 document.getElementById('formLatestRelease').value = mediaList[index].latestRelease || '';
                 document.getElementById('formCoverUrl').value = mediaList[index].coverUrl || '';
                 document.getElementById('formUrl').value = mediaList[index].url || '';
-                document.getElementById('formApiSelect').value = mediaList[index].apiProviderId || '';
             } else {
                 title.textContent = 'Add New Item';
                 editIndex.value = -1;
@@ -1255,8 +999,7 @@
                 chapter: document.getElementById('formChapter').value.trim() || 'Ch 1',
                 latestRelease: document.getElementById('formLatestRelease').value.trim(),
                 coverUrl: coverUrl,
-                url: document.getElementById('formUrl').value.trim(),
-                apiProviderId: document.getElementById('formApiSelect').value
+                url: document.getElementById('formUrl').value.trim()
             };
 
             if (index >= 0) mediaList[index] = item;
