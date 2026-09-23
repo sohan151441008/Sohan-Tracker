@@ -420,10 +420,8 @@
     </div>
 
     <script>
-        const initialFolders = [
-            { id: 'manhwa-default', name: 'Manhwa Tracker', coverUrl: '', icon: 'fa-solid fa-book-open', deleted: false },
-            { id: 'movies-default', name: 'Movies & Series', coverUrl: '', icon: 'fa-solid fa-film', deleted: false }
-        ];
+        // No folders by default so the user starts with a clean slate
+        const initialFolders = [];
 
         const defaultApis = [
             { id: 'mangadex', name: 'MangaDex API', type: 'mangadex', url: 'https://api.mangadex.org' },
@@ -509,6 +507,8 @@
             const activeFolders = folderList.filter(f => !f.deleted);
             if (activeFolders.length > 0) {
                 currentFolderId = activeFolders[0].id;
+            } else {
+                currentFolderId = '';
             }
 
             saveToLocalStorage();
@@ -531,29 +531,33 @@
             document.getElementById('count-deleted-folders').textContent = deletedFolders.length;
 
             nav.innerHTML = '';
-            activeFolders.forEach(folder => {
-                const count = mediaList.filter(m => m.folder === folder.id && m.category !== 'bin').length;
-                const isActive = folder.id === currentFolderId;
+            if (activeFolders.length === 0) {
+                nav.innerHTML = `<p class="text-xs text-slate-500 italic p-2">No folders yet. Click 'New Folder' to add one.</p>`;
+            } else {
+                activeFolders.forEach(folder => {
+                    const count = mediaList.filter(m => m.folder === folder.id && m.category !== 'bin').length;
+                    const isActive = folder.id === currentFolderId;
 
-                const btn = document.createElement('button');
-                btn.onclick = () => switchFolder(folder.id);
-                btn.className = `w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-semibold transition-all ${
-                    isActive ? 'bg-brand-500 text-slate-950 shadow-md shadow-brand-500/10' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
-                }`;
+                    const btn = document.createElement('button');
+                    btn.onclick = () => switchFolder(folder.id);
+                    btn.className = `w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-semibold transition-all ${
+                        isActive ? 'bg-brand-500 text-slate-950 shadow-md shadow-brand-500/10' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
+                    }`;
 
-                const coverAvatar = folder.coverUrl 
-                    ? `<img src="${folder.coverUrl}" class="w-5 h-5 rounded-md object-cover">`
-                    : `<i class="${folder.icon || 'fa-solid fa-folder'} text-xs"></i>`;
+                    const coverAvatar = folder.coverUrl 
+                        ? `<img src="${folder.coverUrl}" class="w-5 h-5 rounded-md object-cover">`
+                        : `<i class="${folder.icon || 'fa-solid fa-folder'} text-xs"></i>`;
 
-                btn.innerHTML = `
-                    <div class="flex items-center space-x-3 truncate">
-                        ${coverAvatar}
-                        <span class="truncate">${escapeXml(folder.name)}</span>
-                    </div>
-                    <span class="text-xs px-2 py-0.5 rounded-full font-mono ${isActive ? 'bg-slate-950/30 text-slate-950' : 'bg-slate-800 text-slate-400'}">${count}</span>
-                `;
-                nav.appendChild(btn);
-            });
+                    btn.innerHTML = `
+                        <div class="flex items-center space-x-3 truncate">
+                            ${coverAvatar}
+                            <span class="truncate">${escapeXml(folder.name)}</span>
+                        </div>
+                        <span class="text-xs px-2 py-0.5 rounded-full font-mono ${isActive ? 'bg-slate-950/30 text-slate-950' : 'bg-slate-800 text-slate-400'}">${count}</span>
+                    `;
+                    nav.appendChild(btn);
+                });
+            }
 
             // Update selectors
             const select = document.getElementById('formFolder');
@@ -998,6 +1002,7 @@
                         renderFolderNav();
                         renderApiList();
                         if (folderList.length > 0) switchFolder(folderList[0].id);
+                        else switchFolder('');
                         alert("Library imported successfully!");
                         closeSettingsModal();
                     } else {
